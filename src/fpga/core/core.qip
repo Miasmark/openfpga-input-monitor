@@ -1,0 +1,6 @@
+# Input monitor: the core's files (apf/apf.qip has the framework's)
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) core_top.v]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) core_bridge_cmd.v]
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) im_top.sv]
+set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) pll/pll_core.qip]
+set_global_assignment -name SEARCH_PATH [file join $::quartus(qip_path)]

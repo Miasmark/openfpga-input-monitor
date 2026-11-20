@@ -1,0 +1,8 @@
+Input Monitor 0.1.0
+
+A test core. It shows the four controllers' raw words (key, joy, trig) and
+how often each changes, and decodes the Dock's USB keyboard (player 3,
+type 4) and mouse (player 4, type 5). See the project's README for the
+tests to run.
+
+https://github.com/Miasmark/openfpga-input-monitor

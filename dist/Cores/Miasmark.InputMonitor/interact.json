@@ -1,0 +1,16 @@
+{
+  "interact": {
+    "magic": "APF_VER_1",
+    "variables": [
+      {
+        "name": "Clear the sums",
+        "id": 1,
+        "type": "action",
+        "enabled": true,
+        "address": "0x10000200",
+        "value": 1
+      }
+    ],
+    "messages": []
+  }
+}

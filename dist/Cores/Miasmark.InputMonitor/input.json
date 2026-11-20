@@ -1,0 +1,13 @@
+{
+  "input": {
+    "magic": "APF_VER_1",
+    "controllers": [
+      {
+        "type": "default",
+        "mappings": [
+          { "id": 0, "name": "Clear the sums (player 1)", "key": "pad_btn_select" }
+        ]
+      }
+    ]
+  }
+}
