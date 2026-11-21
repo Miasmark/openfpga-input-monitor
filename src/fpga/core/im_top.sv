@@ -102,6 +102,11 @@ module im_top (
     logic        m_pend = 1'b0;
     logic [14:0] m_dly = '0;                // 2^15 / 74.25 MHz = 441 us
     logic [15:0] sumx = '0, sumy = '0, sumw = '0, ldx = '0, ldy = '0, reports = '0, skips = '0;
+    // the last eight reports' raw joy and trig, newest first (0.1.3: to see
+    // what the wheel sends, which a single photo can't catch)
+    logic [31:0] hj [8];
+    logic [15:0] ht [8];
+    initial for (int i = 0; i < 8; i++) begin hj[i] = '0; ht[i] = '0; end
     // the motion, bytes swapped into order (see above)
     wire  [15:0] mdx = {cont4_joy[7:0], cont4_joy[15:8]};
     wire  [15:0] mdy = {cont4_trig[7:0], cont4_trig[15:8]};
@@ -137,6 +142,12 @@ module im_top (
                 sumx    <= sumx + mdx;
                 sumy    <= sumy + mdy;
                 sumw    <= sumw + mdw;
+                hj[0] <= cont4_joy;
+                ht[0] <= cont4_trig;
+                for (int i = 1; i < 8; i++) begin
+                    hj[i] <= hj[i - 1];
+                    ht[i] <= ht[i - 1];
+                end
                 reports <= reports + 16'd1;
                 if (mdx != 0) ldx <= mdx;
                 if (mdy != 0) ldy <= mdy;
@@ -145,6 +156,7 @@ module im_top (
             end
         end
         if (clear) begin
+            for (int i = 0; i < 8; i++) begin hj[i] <= '0; ht[i] <= '0; end
             sumx <= '0; sumy <= '0; sumw <= '0; ldx <= '0; ldy <= '0; reports <= '0; skips <= '0;
             px <= 9'd160; py <= 8'd120;
         end
@@ -250,6 +262,8 @@ module im_top (
     logic [8:0]  s_px;
     logic [7:0]  s_py, s_last;
     logic [6:0]  s_typed [40];
+    logic [31:0] s_hj [8];
+    logic [15:0] s_ht [8];
     always_ff @(posedge clk_74a) if (snap_s[2]) begin
         for (int i = 0; i < 4; i++) begin
             s_key[i] <= key[i]; s_joy[i] <= joy[i]; s_trig[i] <= trig[i]; s_rate[i] <= rate[i];
@@ -258,6 +272,7 @@ module im_top (
         s_reports <= reports; s_skips <= skips; s_presses <= presses;
         s_px <= px; s_py <= py; s_last <= last;
         for (int i = 0; i < 40; i++) s_typed[i] <= typed[i];
+        for (int i = 0; i < 8; i++) begin s_hj[i] <= hj[i]; s_ht[i] <= ht[i]; end
     end
 
     // ------------------------------------------------------------------
@@ -283,18 +298,18 @@ module im_top (
     wire        act = hc >= H_START && hc < H_START + H_ACTIVE && vc >= V_START && vc < V_START + V_ACTIVE;
     wire [8:0]  ax = hc - 9'(H_START);
     wire [8:0]  ay = vc - 9'(V_START);
-    wire [10:0] code = screen_code(ay[7:3], ax[8:3]);
+    wire [11:0] code = screen_code(ay[7:3], ax[8:3]);
 
     logic [6:0] ch;
     always_comb begin
-        unique case (code[9:8])
+        unique case (code[10:9])
             2'd0: ch = code[6:0];
             2'd1: begin : hexd
                 logic [3:0] n;
-                n = nib[code[7:0]];
+                n = nib[code[8:0]];
                 ch = n < 4'd10 ? 7'(8'h30 + n) : 7'(8'h41 + n - 4'd10);
             end
-            2'd2: ch = bitf[code[7:0]] ? 7'h31 : 7'h2E;
+            2'd2: ch = bitf[code[8:0]] ? 7'h31 : 7'h2E;
             default: ch = s_typed[code[5:0]];
         endcase
     end
@@ -316,7 +331,7 @@ module im_top (
         else if (ptr)
             video_rgb <= C_PTR;
         else if (ink)
-            video_rgb <= code[10] ? C_HI : C_FG;
+            video_rgb <= code[11] ? C_HI : C_FG;
         else
             video_rgb <= C_BG;
     end

@@ -4,13 +4,13 @@
 Writes src/fpga/core/screen_rom.svh and src/fpga/core/font_rom.svh, both
 included by src/fpga/core/im_top.sv.
 
-The screen is 40 x 30 cells of 8 x 8 pixels (320 x 240). Each cell holds an
-11-bit code:
-  [10]    highlight (drawn in the label colour)
-  [9:8]   kind: 0 = a character, 1 = a hex digit (field nibble [7:0]),
-          2 = a bit flag, '1' or '.' (field bit [7:0]), 3 = the typed line
-          (character [7:0] of it)
-  [7:0]   the character, or the index
+The screen is 40 x 30 cells of 8 x 8 pixels (320 x 240). Each cell holds a
+12-bit code:
+  [11]    highlight (drawn in the label colour)
+  [10:9]  kind: 0 = a character, 1 = a hex digit (field nibble [8:0]),
+          2 = a bit flag, '1' or '.' (field bit [8:0]), 3 = the typed line
+          (character [8:0] of it)
+  [8:0]   the character, or the index
 
 Fields in the layout are written {NAME:xN} (N hex digits of NAME, most
 significant first; NAME must be 4N bits wide), {NAME:b} (one bit) or
@@ -53,6 +53,9 @@ FIELDS.update({
     'LAST': (8, 's_last'),
     'PRESS': (16, 's_presses'),
 })
+for i in range(8):
+    FIELDS['HJ%d' % i] = (32, 's_hj[%d]' % i)
+    FIELDS['HT%d' % i] = (16, 's_ht[%d]' % i)
 for b in range(5):
     FIELDS['B%d' % (16 + b)] = (1, 's_joy[3][%d]' % (16 + b))
 for b in range(16):
@@ -62,7 +65,7 @@ for i, (w, b) in enumerate((('joy', 0), ('joy', 8), ('joy', 16), ('joy', 24), ('
 
 # The layout: (row, text, highlight)
 LAYOUT = [
-    (0, 'INPUT MONITOR 0.1.2', True),
+    (0, 'INPUT MONITOR 0.1.3', True),
     (2, '   T KEY      JOY      TRIG RATE/S', True),
     (3, 'P1 {T1:x1} {K1:x8} {J1:x8} {G1:x4} {R1:x3}', False),
     (4, 'P2 {T2:x1} {K2:x8} {J2:x8} {G2:x4} {R2:x3}', False),
@@ -82,10 +85,12 @@ LAYOUT = [
     (20, 'KEYS {HC0:x2} {HC1:x2} {HC2:x2} {HC3:x2} {HC4:x2} {HC5:x2}  LAST {LAST:x2}', False),
     (21, 'PRESSES {PRESS:x4}   TYPED:', False),
     (22, '{TYPED:t40}', False),
-    (24, 'MOVE THE MOUSE RIGHT, THEN DOWN: THE', False),
-    (25, 'POINTER SHOULD FOLLOW. HOLD SHIFT, CTRL,', False),
-    (26, 'ALT: SEE WHICH MODIFIER BYTE LIGHTS UP.', False),
-    (28, 'P1 SELECT OR THE MENU CLEARS THE SUMS.', True),
+    (23, 'P4 LAST 8 REPORTS, NEWEST FIRST:', True),
+    (24, ' {HJ0:x8} {HT0:x4}   {HJ1:x8} {HT1:x4}', False),
+    (25, ' {HJ2:x8} {HT2:x4}   {HJ3:x8} {HT3:x4}', False),
+    (26, ' {HJ4:x8} {HT4:x4}   {HJ5:x8} {HT5:x4}', False),
+    (27, ' {HJ6:x8} {HT6:x4}   {HJ7:x8} {HT7:x4}', False),
+    (29, 'P1 SELECT OR THE MENU CLEARS THE SUMS.', True),
 ]
 
 # 5 x 7 glyphs in an 8 x 8 cell (columns 1-5, rows 0-6); '#' = ink
@@ -187,8 +192,8 @@ def main():
                 v = len(bits) - 1
             elif kind == 0:
                 assert chr(v) in GLYPHS, (text, chr(v))
-            assert v < 256
-            rom[(row, col)] = (int(hi) << 10) | (kind << 8) | v
+            assert v < 512
+            rom[(row, col)] = (int(hi) << 11) | (kind << 9) | v
 
     # Field expressions on a bit range of a bit range are not legal SV: give
     # each field a flat wire first.
@@ -216,12 +221,12 @@ def main():
     for i, e in enumerate(bits):
         out.append('assign bitf[%d] = %s;' % (i, e))
     out.append('')
-    out.append('function automatic logic [10:0] screen_code(input logic [4:0] row, input logic [5:0] col);')
+    out.append('function automatic logic [11:0] screen_code(input logic [4:0] row, input logic [5:0] col);')
     out.append('    case ({row, col})')
     for (row, col), code in sorted(rom.items()):
         if code != ord(' '):
-            out.append("        {5'd%d, 6'd%d}: screen_code = 11'h%03X;" % (row, col, code))
-    out.append("        default: screen_code = 11'h020;")
+            out.append("        {5'd%d, 6'd%d}: screen_code = 12'h%03X;" % (row, col, code))
+    out.append("        default: screen_code = 12'h020;")
     out.append('    endcase')
     out.append('endfunction')
     open(os.path.join(CORE, 'screen_rom.svh'), 'w').write('\n'.join(out) + '\n')

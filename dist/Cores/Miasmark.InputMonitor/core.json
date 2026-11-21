@@ -7,7 +7,7 @@
       "description": "Shows raw controller words and the Dock keyboard and mouse.",
       "author": "Miasmark",
       "url": "https://github.com/Miasmark/openfpga-input-monitor",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "date_release": "2026-11-21"
     },
     "framework": {
