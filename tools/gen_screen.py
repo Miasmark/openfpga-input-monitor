@@ -61,7 +61,7 @@ for i, (w, b) in enumerate((('joy', 0), ('joy', 8), ('joy', 16), ('joy', 24), ('
 
 # The layout: (row, text, highlight)
 LAYOUT = [
-    (0, 'INPUT MONITOR 0.1', True),
+    (0, 'INPUT MONITOR 0.1.1', True),
     (2, '   T KEY      JOY      TRIG RATE/S', True),
     (3, 'P1 {T1:x1} {K1:x8} {J1:x8} {G1:x4} {R1:x3}', False),
     (4, 'P2 {T2:x1} {K2:x8} {J2:x8} {G2:x4} {R2:x3}', False),

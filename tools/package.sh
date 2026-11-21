@@ -8,7 +8,21 @@ CORE="$ROOT/dist/Cores/Miasmark.InputMonitor"
 VERSION=$(python3 -c "import json;print(json.load(open('$CORE/core.json'))['core']['metadata']['version'])")
 
 [ -f "$RBF" ] || { echo "missing $RBF - build first"; exit 1; }
-python3 "$ROOT/tools/reverse_bits.py" "$RBF" "$CORE/inputmonitor.rbf_r"
+# core.json's length limits (Analogue's core.json docs): the Pocket says
+# "Cannot find bitstream" when cores[].filename is longer than 15 characters.
+python3 - "$CORE/core.json" <<'PY'
+import json, sys
+c = json.load(open(sys.argv[1]))["core"]
+m = c["metadata"]
+bad = [(k, len(m[k]), n) for k, n in (("shortname", 31), ("description", 63), ("author", 31),
+       ("version", 31), ("url", 63), ("date_release", 10)) if len(m[k]) > n]
+bad += [("cores[].filename " + x["filename"], len(x["filename"]), 15) for x in c["cores"] if len(x["filename"]) > 15]
+bad += [("cores[].name " + x["name"], len(x["name"]), 15) for x in c["cores"] if len(x.get("name", "")) > 15]
+for k, l, n in bad:
+    print("core.json: %s is %d characters, the limit is %d" % (k, l, n))
+sys.exit(1 if bad else 0)
+PY
+python3 "$ROOT/tools/reverse_bits.py" "$RBF" "$CORE/inputmon.rbf_r"
 
 mkdir -p "$ROOT/release"
 OUT="$ROOT/release/InputMonitor_Pocket_${VERSION}.zip"

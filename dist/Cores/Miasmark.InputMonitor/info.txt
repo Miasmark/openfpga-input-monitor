@@ -1,4 +1,4 @@
-Input Monitor 0.1.0
+Input Monitor 0.1.1
 
 A test core. It shows the four controllers' raw words (key, joy, trig) and
 how often each changes, and decodes the Dock's USB keyboard (player 3,

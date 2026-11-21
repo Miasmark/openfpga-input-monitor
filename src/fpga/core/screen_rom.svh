@@ -250,6 +250,8 @@ function automatic logic [10:0] screen_code(input logic [4:0] row, input logic [
         {5'd0, 6'd14}: screen_code = 11'h430;
         {5'd0, 6'd15}: screen_code = 11'h42E;
         {5'd0, 6'd16}: screen_code = 11'h431;
+        {5'd0, 6'd17}: screen_code = 11'h42E;
+        {5'd0, 6'd18}: screen_code = 11'h431;
         {5'd2, 6'd0}: screen_code = 11'h420;
         {5'd2, 6'd1}: screen_code = 11'h420;
         {5'd2, 6'd2}: screen_code = 11'h420;

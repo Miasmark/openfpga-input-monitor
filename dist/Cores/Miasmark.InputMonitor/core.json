@@ -4,10 +4,10 @@
     "metadata": {
       "platform_ids": ["inputmon"],
       "shortname": "InputMonitor",
-      "description": "Test core: shows the raw controller words, and decodes the Dock's USB keyboard and mouse.",
+      "description": "Shows raw controller words and the Dock keyboard and mouse.",
       "author": "Miasmark",
       "url": "https://github.com/Miasmark/openfpga-input-monitor",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "date_release": "2026-11-20"
     },
     "framework": {
@@ -27,7 +27,7 @@
       {
         "name": "default",
         "id": 0,
-        "filename": "inputmonitor.rbf_r"
+        "filename": "inputmon.rbf_r"
       }
     ]
   }
