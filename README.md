@@ -71,6 +71,13 @@ report back.
 4. **Keys:** type a word: it appears under `TYPED`. Hold several keys at once
    and watch the six `KEYS` slots fill.
 
+**Mice tried so far:**
+
+| Mouse | Result |
+|---|---|
+| Microsoft Classic IntelliMouse | Works: motion, five buttons (0.1.1 / 0.1.2). |
+| Microsoft Comfort Mouse 4500 | Reports and buttons only, no motion: the Dock doesn't read its motion. |
+
 **Without the Dock:** P1 is the Pocket's own controls; the others show 0.
 
 ## Build
