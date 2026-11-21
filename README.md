@@ -29,7 +29,7 @@ mouse moving right and down with a button held on P4.)*
 | Rows | What |
 |---|---|
 | **P1-P4** | Each controller's type (`key[31:28]`), raw `key`, `joy` and `trig` words in hex, and how many times per second the controller's words change (`RATE/S`, decimal, up to 999). |
-| **MOUSE** | Player 4, type 5, as found on a Dock (0.1.1, a Microsoft Classic IntelliMouse): `key[15:0]` a report counter; X in `joy[15:0]` and Y in `trig[15:0]`, each a signed 16-bit count with its **low byte in bits [15:8]** (so the raw word 0100 is +1 and FBFF is -5; `NOW` shows them swapped into order); five buttons in `joy[20:16]`; `joy[31:24]` presumably the wheel. On each change of the counter, half a poll later, the core takes X and Y as one report's motion, adds them to `SUM` (hex, 16-bit; negative values wrap, e.g. FFFE = -2) and moves the red pointer. `LAST` is the last non-zero X and Y. `SKIPS` counts counter jumps of more than 1. |
+| **MOUSE** | Player 4, type 5, as found on a Dock (0.1.1, a Microsoft Classic IntelliMouse): `key[15:0]` a report counter; X in `joy[15:0]` and Y in `trig[15:0]`, each a signed 16-bit count with its **low byte in bits [15:8]** (so the raw word 0100 is +1 and FBFF is -5; `NOW` shows them swapped into order); five buttons in `joy[20:16]` (bit 16 left, 17 right, 18 middle, 19 back, 20 forward). There is no separate wheel: each wheel click arrives as a one-count X report (raw 0100 or FFFF), the same as a one-count move sideways (0.1.3). The `WHEEL` line shows `joy[31:24]`, which stayed 0. On each change of the counter, half a poll later, the core takes X and Y as one report's motion, adds them to `SUM` (hex, 16-bit; negative values wrap, e.g. FFFE = -2) and moves the red pointer. `LAST` is the last non-zero X and Y. `SKIPS` counts counter jumps of more than 1. |
 | **P4 LAST 8 REPORTS** | The raw `joy` and `trig` words of player 4's last eight reports, newest first (0.1.3): a change that lasts one report, like a wheel click, stays on screen to be photographed. |
 | **KEYBOARD** | Read as player 3, type 4: the six HID usage codes in `joy` (bytes 0-3) and `trig` (bytes 0-1). Both candidate modifier bytes are shown bit by bit, under the HID modifier layout (bit 7 to 0: right GUI, Alt, Shift, Ctrl, then left GUI, Alt, Shift, Ctrl). Each newly pressed key counts in `PRESSES`, shows in `LAST`, and is echoed under `TYPED` (Enter clears the line, Backspace deletes). |
 
@@ -77,7 +77,7 @@ report back.
 
 | Mouse | Result |
 |---|---|
-| Microsoft Classic IntelliMouse | Works: motion, five buttons (0.1.1 / 0.1.2). |
+| Microsoft Classic IntelliMouse | Works: motion, five buttons; wheel clicks arrive as one-count X motion (0.1.1-0.1.3). |
 | Microsoft Comfort Mouse 4500 | Reports and buttons only, no motion: the Dock doesn't read its motion. |
 
 **Without the Dock:** P1 is the Pocket's own controls; the others show 0.
