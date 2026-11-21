@@ -36,9 +36,10 @@ for n in range(1, 5):
     FIELDS['R%d' % n] = (12, 's_rate[%d]' % (n - 1))
 FIELDS.update({
     'MCNT': (16, 's_key[3][15:0]'),
-    'MX': (16, 's_joy[3][15:0]'),
-    'MY': (16, 's_trig[3]'),
-    'MHI': (16, 's_joy[3][31:16]'),
+    'MX': (16, "{s_joy[3][7:0], s_joy[3][15:8]}"),
+    'MY': (16, "{s_trig[3][7:0], s_trig[3][15:8]}"),
+    'MW': (8, 's_joy[3][31:24]'),
+    'SW': (16, 's_sumw'),
     'LDX': (16, 's_ldx'),
     'LDY': (16, 's_ldy'),
     'SX': (16, 's_sumx'),
@@ -52,7 +53,7 @@ FIELDS.update({
     'LAST': (8, 's_last'),
     'PRESS': (16, 's_presses'),
 })
-for b in range(3):
+for b in range(5):
     FIELDS['B%d' % (16 + b)] = (1, 's_joy[3][%d]' % (16 + b))
 for b in range(16):
     FIELDS['M%d' % b] = (1, 's_key[2][%d]' % b)
@@ -61,7 +62,7 @@ for i, (w, b) in enumerate((('joy', 0), ('joy', 8), ('joy', 16), ('joy', 24), ('
 
 # The layout: (row, text, highlight)
 LAYOUT = [
-    (0, 'INPUT MONITOR 0.1.1', True),
+    (0, 'INPUT MONITOR 0.1.2', True),
     (2, '   T KEY      JOY      TRIG RATE/S', True),
     (3, 'P1 {T1:x1} {K1:x8} {J1:x8} {G1:x4} {R1:x3}', False),
     (4, 'P2 {T2:x1} {K2:x8} {J2:x8} {G2:x4} {R2:x3}', False),
@@ -69,10 +70,10 @@ LAYOUT = [
     (6, 'P4 {T4:x1} {K4:x8} {J4:x8} {G4:x4} {R4:x3}', False),
     (8, 'MOUSE: P4, TYPE 5 EXPECTED', True),
     (9, 'COUNTER {MCNT:x4} REPORTS {REP:x4} SKIPS {SKIP:x4}', False),
-    (10, 'X  RAW {MX:x4}  LAST {LDX:x4}  SUM {SX:x4}', False),
-    (11, 'Y  RAW {MY:x4}  LAST {LDY:x4}  SUM {SY:x4}', False),
-    (12, 'BUTTONS 18 17 16: {B18:b} {B17:b} {B16:b}  J[31:16] {MHI:x4}', False),
-    (13, 'POINTER X {PX:x3} Y {PY:x3}', False),
+    (10, 'X  NOW {MX:x4}  LAST {LDX:x4}  SUM {SX:x4}', False),
+    (11, 'Y  NOW {MY:x4}  LAST {LDY:x4}  SUM {SY:x4}', False),
+    (12, 'BUTTONS J[20:16] {B20:b} {B19:b} {B18:b} {B17:b} {B16:b}', False),
+    (13, 'WHEEL {MW:x2} SUM {SW:x4}  POINTER {PX:x3},{PY:x3}', False),
     (15, 'KEYBOARD: P3, TYPE 4 EXPECTED', True),
     (16, 'MODIFIERS     RIGHT    LEFT', False),
     (17, '              G A S C  G A S C', False),

@@ -3,9 +3,13 @@
 // clk_74a side (the domain the APF pad controller writes the words in):
 // - every controller's raw words, and how often each changes (changes per
 //   second, BCD);
-// - the mouse, read as the Atari ST core's notes describe it (controller 4,
-//   type 5): a report counter in key[15:0], X in joy[15:0], Y in trig[15:0],
-//   buttons in joy[18:16]. Each time the counter changes, X and Y are taken
+// - the mouse (controller 4, type 5), as 0.1.1 found it on a Dock: a report
+//   counter in key[15:0]; X in joy[15:0] and Y in trig[15:0], each a signed
+//   16-bit count with its LOW byte in bits [15:8] (the report's bytes in
+//   order from the top, as the keyboard's are: 0x0100 = +1, 0xFBFF = -5);
+//   the buttons in joy[20:16] (five: HID order presumably left, right,
+//   middle, back, forward); joy[31:24] presumably the wheel, a signed count.
+//   Each time the counter changes, X and Y are taken
 //   as one report's motion, half a poll later (the pad controller writes
 //   key, joy and trig one after another, once every 882 us), and added to
 //   the sums and to a pointer. Wrong guesses show plainly: the pointer runs
@@ -97,7 +101,11 @@ module im_top (
     logic [15:0] mcnt_prev = '0;
     logic        m_pend = 1'b0;
     logic [14:0] m_dly = '0;                // 2^15 / 74.25 MHz = 441 us
-    logic [15:0] sumx = '0, sumy = '0, ldx = '0, ldy = '0, reports = '0, skips = '0;
+    logic [15:0] sumx = '0, sumy = '0, sumw = '0, ldx = '0, ldy = '0, reports = '0, skips = '0;
+    // the motion, bytes swapped into order (see above)
+    wire  [15:0] mdx = {cont4_joy[7:0], cont4_joy[15:8]};
+    wire  [15:0] mdy = {cont4_trig[7:0], cont4_trig[15:8]};
+    wire  [15:0] mdw = {{8{cont4_joy[31]}}, cont4_joy[31:24]};
     logic [8:0]  px = 9'd160;
     logic [7:0]  py = 8'd120;
 
@@ -126,17 +134,18 @@ module im_top (
             m_dly <= m_dly + 15'd1;
             if (&m_dly) begin
                 m_pend  <= 1'b0;
-                sumx    <= sumx + cont4_joy[15:0];
-                sumy    <= sumy + cont4_trig;
+                sumx    <= sumx + mdx;
+                sumy    <= sumy + mdy;
+                sumw    <= sumw + mdw;
                 reports <= reports + 16'd1;
-                if (cont4_joy[15:0] != 0) ldx <= cont4_joy[15:0];
-                if (cont4_trig != 0)      ldy <= cont4_trig;
-                px <= clampx(px, cont4_joy[15:0]);
-                py <= clampy(py, cont4_trig);
+                if (mdx != 0) ldx <= mdx;
+                if (mdy != 0) ldy <= mdy;
+                px <= clampx(px, mdx);
+                py <= clampy(py, mdy);
             end
         end
         if (clear) begin
-            sumx <= '0; sumy <= '0; ldx <= '0; ldy <= '0; reports <= '0; skips <= '0;
+            sumx <= '0; sumy <= '0; sumw <= '0; ldx <= '0; ldy <= '0; reports <= '0; skips <= '0;
             px <= 9'd160; py <= 8'd120;
         end
     end
@@ -237,7 +246,7 @@ module im_top (
     logic [31:0] s_key [4], s_joy [4];
     logic [15:0] s_trig [4];
     logic [11:0] s_rate [4];
-    logic [15:0] s_sumx, s_sumy, s_ldx, s_ldy, s_reports, s_skips, s_presses;
+    logic [15:0] s_sumx, s_sumy, s_sumw, s_ldx, s_ldy, s_reports, s_skips, s_presses;
     logic [8:0]  s_px;
     logic [7:0]  s_py, s_last;
     logic [6:0]  s_typed [40];
@@ -245,7 +254,7 @@ module im_top (
         for (int i = 0; i < 4; i++) begin
             s_key[i] <= key[i]; s_joy[i] <= joy[i]; s_trig[i] <= trig[i]; s_rate[i] <= rate[i];
         end
-        s_sumx <= sumx; s_sumy <= sumy; s_ldx <= ldx; s_ldy <= ldy;
+        s_sumx <= sumx; s_sumy <= sumy; s_sumw <= sumw; s_ldx <= ldx; s_ldy <= ldy;
         s_reports <= reports; s_skips <= skips; s_presses <= presses;
         s_px <= px; s_py <= py; s_last <= last;
         for (int i = 0; i < 40; i++) s_typed[i] <= typed[i];

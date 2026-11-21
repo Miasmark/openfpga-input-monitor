@@ -51,9 +51,11 @@ int main(int argc, char **argv) {
         }
         if (ph == 3000) {
             bool moving = (n % 2) == 0;
-            int16_t dx = moving ? 2 : 0, dy = moving ? (c > 30000000 ? 1 : 0) : 0;
-            t->cont4_joy = (1u << 16) | (uint16_t)dx;
-            t->cont4_trig = (uint16_t)dy;
+            int16_t dx = moving ? 2 : 0, dy = moving ? (c > 30000000 ? -1 : 0) : 0;
+            // as the Dock sends them: each count's low byte in [15:8]; buttons in [20:16]; wheel [31:24]
+            auto sw = [](int16_t v) { return (uint16_t)(((uint16_t)v << 8) | ((uint16_t)v >> 8)); };
+            t->cont4_joy = (1u << 16) | (c > 50000000 ? 0x01000000u : 0) | sw(dx);
+            t->cont4_trig = sw(dy);
         }
         t->clear_74a = 0;
         t->clk_74a = 1;

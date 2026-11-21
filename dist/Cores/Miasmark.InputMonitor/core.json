@@ -7,8 +7,8 @@
       "description": "Shows raw controller words and the Dock keyboard and mouse.",
       "author": "Miasmark",
       "url": "https://github.com/Miasmark/openfpga-input-monitor",
-      "version": "0.1.1",
-      "date_release": "2026-11-20"
+      "version": "0.1.2",
+      "date_release": "2026-11-21"
     },
     "framework": {
       "target_product": "Analogue Pocket",
